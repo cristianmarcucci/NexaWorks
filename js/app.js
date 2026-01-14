@@ -1,4 +1,4 @@
-import {addTestUser, login} from "./auth.js";
+import { addTestUser, login} from "./auth.js";
 
 addTestUser();
 
@@ -10,3 +10,5 @@ loginSubmit.addEventListener("submit", (event)=>{
     event.preventDefault();
     login(emailInput.value, passwordInput.value);
 });
+
+

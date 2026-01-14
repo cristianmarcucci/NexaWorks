@@ -1,29 +1,37 @@
-let users = [];
+let users = getLoggedUser();
+
+function updateUsersState(newUsers){
+    users = newUsers;
+    setLoggedUser(newUsers);
+}
 
 export function addTestUser() {
 
-    for (let index = 0; index < 5; index++) {
-        const testUser = {
-        id: Date.now(),
-        name: "Jack Black",
-        email: `exemple${index}@exemple.com`,
-        password: `${index}${index}${index}${index}`,
-        isAuthenticated: false
+    if(users.length === 0){
+        let newUsers = [];
+        for (let index = 0; index < 5; index++) {
+            const testUser = {
+            id: Date.now() + index,
+            name: `Android n ${index}`,
+            email: `exemple${index}@exemple.com`,
+            password: `${index}${index}${index}${index}`,
+            isAuthenticated: false
+            }
+
+            newUsers.push(testUser)      
+        } 
+        updateUsersState(newUsers);
+        redirectLogged(users);
     }
-
-        users = [...users, testUser];        
-    } 
-
-    console.log(users);
 }
 
 function getLoggedUser() {
-    const logged = localStorage.getItem("user");
-    return logged ? JSON.parse(logged) : {};
+    const loggedUser = localStorage.getItem("loggedUser");
+    return loggedUser ? JSON.parse(loggedUser) : [];
 }
 
-function setLoggedUser() {
-    localStorage.setItem("user", JSON.stringify(user));
+function setLoggedUser(users) {
+    localStorage.setItem("loggedUser", JSON.stringify(users));
 }
 
 export function login(email, password) {
@@ -31,19 +39,36 @@ export function login(email, password) {
     const updateUser = users.map(user => {
         if(user.email === email && user.password === String(password)){
             return {...user, isAuthenticated: true};
-        }
-        
-        return user;
+        }           
+            return user; 
     })
-
-    checkAuthentication(updateUser);
+    setLoggedUser(updateUser);   
+    redirectLogged(updateUser);
 }
 
-function checkAuthentication(user) {
-    if(user.find(user => user.isAuthenticated)) {
-        window.location.href = './index.html';
+function logout(){
+    const updateUser = users.map(user => ({...user, isAuthenticated: false}));
+    updateUsersState(updateUser);          
+    redirectLogged(updateUser);
+    divider.innerHTML = "";
+}
+
+function redirectLogged(u) {
+
+    console.log(u);
+
+    if(u.find(user => user.isAuthenticated)) {
+        console.log(`welcome, ${u.find(user => user.isAuthenticated).name}!`);
+        const divider = document.getElementById("divider");
+        divider.innerHTML = '<button class="btn-login" id="logoutBtn">Logout</button>';
+        const logoutBtn = document.getElementById("logoutBtn");
+        logoutBtn.addEventListener("click", () => logout());
+        //window.location.href = './index.html';
     } else {
-        console.log(user, users.find(user => user.isAuthenticated));
+        if (window.location.hash !== '#') {
+            window.location.href = '#';        }
     }
     
 }
+
+redirectLogged(users);
