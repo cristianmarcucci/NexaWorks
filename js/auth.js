@@ -35,11 +35,22 @@ function setLoggedUser(users) {
 }
 
 export function login(email, password) {
+
+    const emailCheck = users.some(user => user.email === email);
+
+    if(emailCheck){
+        const checkPassword =  users.map(user => {
+        if(user.email === email && user.password !== String(password)){
+            alert("Incorrect password.");
+        }});
+    } else {
+            alert("Email not registred");
+    }
           
     const updateUser = users.map(user => {
         if(user.email === email && user.password === String(password)){
             return {...user, isAuthenticated: true};
-        }           
+        }         
             return user; 
     })
     setLoggedUser(updateUser);   
