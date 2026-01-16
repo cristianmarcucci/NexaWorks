@@ -6,5 +6,16 @@
   </head>
   <body>
     <h1>Welcome</h1>
+    <button id="logoutBtn">Logout</button>
+
+    <script type="module" src="./js/app.js"></script>
+    <script type="module">
+      import { requireAuth, getSession } from "./js/auth.js";
+
+      requireAuth();
+
+      const session = getSession();
+      document.querySelector("h1").innerHTML = `Welcome, ${session.name}!`;
+    </script>
   </body>
 </html>

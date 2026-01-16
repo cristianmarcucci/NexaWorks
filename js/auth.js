@@ -1,85 +1,75 @@
-let users = getLoggedUser();
+const USERS_KEY = "users";
+const SESSION_KEY = "session";
 
-function updateUsersState(newUsers){
-    users = newUsers;
-    setLoggedUser(newUsers);
+// --- USERS ---
+
+function getUsers() {
+    return JSON.parse(localStorage.getItem(USERS_KEY)) || [];
 }
 
-export function addTestUser() {
+function setUsers(users) {
+    return localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
 
-    if(users.length === 0){
-        let newUsers = [];
-        for (let index = 0; index < 5; index++) {
-            const testUser = {
-            id: Date.now() + index,
-            name: `Android n ${index}`,
-            email: `exemple${index}@exemple.com`,
-            password: `${index}${index}${index}${index}`,
-            isAuthenticated: false
-            }
+export function addTestUsers() {
+    const users = getUsers();
+    if (users.length > 0) return;
 
-            newUsers.push(testUser)      
-        } 
-        updateUsersState(newUsers);
-        redirectLogged(users);
+    const testUsers = Array.from({length: 5}, (_, i) => ({
+        id: Date.now() + i,
+        name: `Android n ${i}`,
+        email: `exemple${i}@exemple.com`,
+        password: `${i}${i}${i}${i}`
+    }));
+
+    setUsers(testUsers);
+}
+
+// --- SESSION ---
+
+export function getSession() {
+    return JSON.parse(localStorage.getItem(SESSION_KEY));
+}
+
+export function setSession(user){
+    return localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+}
+
+export function logout() {
+    localStorage.removeItem(SESSION_KEY);
+    window.location.href = "login.html";
+}
+
+// --- AUTH ---
+
+export function login(email, password){
+    const users = getUsers();
+
+    const user = users.find(
+        u => u.email === email && u.password === password
+    );
+
+    if(!user) {
+        alert("Invalid email or password");
+        return;
+    }
+
+    setSession({
+        id: user.id,
+        name: user.name,
+        email: user.email
+    });
+
+    window.location.href = "index.html";
+
+}
+
+// --- ROUTE GUARD ---
+
+export function requireAuth(){
+    const session = getSession();
+    if(!session){
+        window.location.href = "login.html";
     }
 }
-
-function getLoggedUser() {
-    const loggedUser = localStorage.getItem("loggedUser");
-    return loggedUser ? JSON.parse(loggedUser) : [];
-}
-
-function setLoggedUser(users) {
-    localStorage.setItem("loggedUser", JSON.stringify(users));
-}
-
-export function login(email, password) {
-
-    const emailCheck = users.some(user => user.email === email);
-
-    if(emailCheck){
-        const checkPassword =  users.map(user => {
-        if(user.email === email && user.password !== String(password)){
-            alert("Incorrect password.");
-        }});
-    } else {
-            alert("Email not registred");
-    }
-          
-    const updateUser = users.map(user => {
-        if(user.email === email && user.password === String(password)){
-            return {...user, isAuthenticated: true};
-        }         
-            return user; 
-    })
-    setLoggedUser(updateUser);   
-    redirectLogged(updateUser);
-}
-
-function logout(){
-    const updateUser = users.map(user => ({...user, isAuthenticated: false}));
-    updateUsersState(updateUser);          
-    redirectLogged(updateUser);
-    divider.innerHTML = "";
-}
-
-function redirectLogged(u) {
-
-    console.log(u);
-
-    if(u.find(user => user.isAuthenticated)) {
-        console.log(`welcome, ${u.find(user => user.isAuthenticated).name}!`);
-        const divider = document.getElementById("divider");
-        divider.innerHTML = '<button class="btn-login" id="logoutBtn">Logout</button>';
-        const logoutBtn = document.getElementById("logoutBtn");
-        logoutBtn.addEventListener("click", () => logout());
-        //window.location.href = './index.html';
-    } else {
-        if (window.location.hash !== '#') {
-            window.location.href = '#';        }
-    }
-    
-}
-
-redirectLogged(users);
+ 
